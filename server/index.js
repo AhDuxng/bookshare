@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const db = require('./db');
+const bcrypt = require('bcrypt');
 
 const app = express();
 app.use(cors());
@@ -33,6 +34,8 @@ app.get('/api/books/:id', (req, res) => {
         if (results.length === 0) {
             return res.status(404).json({message: "Không tìm thấy sách nào"});
         }
+
+        res.json(results[0]);
     });
 });
 
@@ -52,6 +55,64 @@ app.post('/api/books', (req, res) => {
         }
         // Trả về thông báo thành công
         res.json({ message: "Đăng bán thành công!", id: result.insertId });
+    });
+});
+
+//API Đăng Ký tài khoản
+app.post('/api/register', (req, res) => {
+    const { username, password, full_name } = req.body;
+
+    const saltRounds = 10; 
+
+    bcrypt.hash(password, saltRounds, (err, hash) => {
+        if (err) {
+            return res.status(500).json({error: "Lỗi mã hóa"});
+        }
+
+        const sql = "INSERT INTO users (username, password, full_name) VALUES (?, ?, ?)";
+        db.query(sql, [username, hash, full_name], (err, result) => {
+            if(err) {
+                //ktra trùng username
+                if (err.code === 'ER_DUP_ENTRY') {
+                    return res.status(400).json({message: "Tên đăng nhập đã tồn tại"});
+                }
+
+                return res.status(500).json({error: err.message});
+            }
+            res.json({message: "Đăng ký thành công!"});
+        });
+    });
+});
+
+//API đăng nhập
+app.post('/api/login', (req, res) => {
+    const {username, password } = req.body;
+
+    const sql = "SELECT * FROM users WHERE username = ?";
+    db.query(sql, [username], (err, result) => {
+        if (err) {
+            return err.status(500).json({error: err.message});
+        }
+        if (result.length === 0) {
+            return err.status(401).json({message: "Tên đăng nhập không tồn tại!"});
+        }
+
+        const user = result[0];
+
+        bcrypt.compare(password, user.password, (err, isMatch) => {
+            if (err) {
+                return err.status(500).json({message: "Lỗi xác thực"});
+            }
+
+            if (isMatch) {
+                res.json({
+                    message: "Đăng nhập thành công",
+                    user: {id: user.id, username: user.username, full_name: user.full_name}
+                });
+            } else {
+                res.status(401).json({message: "Sai mật khẩu"});
+            }
+        });
     });
 });
 

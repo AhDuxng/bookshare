@@ -47,7 +47,7 @@ function BookDetail() {
                     </div>
 
                     {/* CỘT 2: THÔNG TIN */}
-                    <div className="flex flex-col justify-center">
+                    <div className="flex flex-col justify-center text-center">
                         <h1 className="text-3xl font-bold text-gray-800 mb-4">{book.title}</h1>
                         <p className="text-red-600 font-bold text-2xl mb-6">
                             {book.price.toLocaleString()} đ
@@ -55,7 +55,7 @@ function BookDetail() {
                         <p className="text-gray-600 mb-6 leading-relaxed">
                             {book.description || "Người bán chưa nhập mô tả cho cuốn sách này."}
                         </p>
-                        <button className="bg-blue-600 text-white px-8 py-3 rounded-lg font-bold hover:bg-blue-700 transition w-fit shadow-lg">
+                        <button className="bg-blue-600 text-white px-8 py-3 rounded-lg font-bold hover:bg-blue-700 transition w-fit shadow-lg mx-auto">
                             Mua ngay
                         </button>
                     </div>
