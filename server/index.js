@@ -60,7 +60,7 @@ app.post('/api/books', (req, res) => {
 
 //API Đăng Ký tài khoản
 app.post('/api/register', (req, res) => {
-    const { username, password, full_name } = req.body;
+    const { username, email, password } = req.body;
 
     const saltRounds = 10; 
 
@@ -69,8 +69,8 @@ app.post('/api/register', (req, res) => {
             return res.status(500).json({error: "Lỗi mã hóa"});
         }
 
-        const sql = "INSERT INTO users (username, password, full_name) VALUES (?, ?, ?)";
-        db.query(sql, [username, hash, full_name], (err, result) => {
+        const sql = "INSERT INTO users (username, email,password) VALUES (?, ?, ?)";
+        db.query(sql, [username, email,hash], (err, result) => {
             if(err) {
                 //ktra trùng username
                 if (err.code === 'ER_DUP_ENTRY') {
@@ -101,7 +101,7 @@ app.post('/api/login', (req, res) => {
 
         bcrypt.compare(password, user.password, (err, isMatch) => {
             if (err) {
-                return err.status(500).json({message: "Lỗi xác thực"});
+                return res.status(500).json({message: "Lỗi xác thực"});
             }
 
             if (isMatch) {
