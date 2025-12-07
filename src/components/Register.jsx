@@ -28,7 +28,7 @@ function Register() {
     const handleRegister = async (e) => {
         e.preventDefault();
 
-        // 1. Kiểm tra dữ liệu đầu vào
+        // Kiểm tra dữ liệu đầu vào
         if (!form.username || !form.email || !form.password || !form.confirmPassword) {
             alert("Vui lòng nhập đầy đủ thông tin!");
             return;
@@ -39,7 +39,7 @@ function Register() {
             return;
         }
 
-        // 2. Gửi dữ liệu xuống Backend
+        // Gửi dữ liệu xuống Backend
         try {
             // Lưu ý: Backend cần có API /api/register để nhận request này
             const response = await axios.post("http://localhost:3000/api/register", {
@@ -61,7 +61,7 @@ function Register() {
             }
         }
     };
-    // 4.xử lý khi bấm nút "Đồng ý" trên Popup
+    // xử lý khi bấm nút "Đồng ý" trên Popup
     const handlePopupClose = () => {
         setShowPopup(false);
         navigate("/login"); // Chuyển sang trang đăng nhập
@@ -70,7 +70,7 @@ function Register() {
     return (
         <div className="min-h-screen bg-gray-100 flex flex-col">
             
-            <Header />
+            {/* <Header /> */}
 
             <SuccessPopup 
                 isOpen={showPopup} 

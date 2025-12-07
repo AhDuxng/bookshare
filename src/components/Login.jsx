@@ -31,7 +31,7 @@ function Login() {
 
     return (
         <div className="bg-gray-50 min-h-screen flex flex-col font-sans">
-            <Header />
+            {/* <Header /> */}
 
             <SuccessPopup 
                 isOpen={showPopup} 
@@ -43,7 +43,7 @@ function Login() {
             <div className="flex-grow flex items-center justify-center p-4">
                 <div className="bg-white p-8 md:p-10 rounded-2xl shadow-xl w-full max-w-md">
                     
-                    {/* 1. Tiêu đề chào mừng */}
+                    {/* Tiêu đề chào mừng */}
                     <div className="text-center mb-8">
                         <h2 className="text-3xl font-extrabold text-gray-900 mb-2">Chào mừng trở lại!</h2>
                         <p className="text-gray-500 text-sm">Đăng nhập để tiếp tục khám phá kho sách cũ.</p>
@@ -51,7 +51,7 @@ function Login() {
 
                     <form onSubmit={handleLogin} className="space-y-5">
                         
-                        {/* 2. Ô nhập Username */}
+                        {/* Ô nhập Username */}
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Email hoặc tên người dùng</label>
                             <div className="relative">
@@ -71,7 +71,7 @@ function Login() {
                             </div>
                         </div>
 
-                        {/* 3. Ô nhập Password */}
+                        {/* Ô nhập Password */}
                         <div>
                             <div className="flex justify-between items-center mb-1">
                                 <label className="block text-sm font-medium text-gray-700">Mật khẩu</label>
@@ -114,32 +114,13 @@ function Login() {
                             </div>
                         </div>
 
-                        {/* 4. Nút Đăng nhập */}
+                        {/* Nút Đăng nhập */}
                         <button className="w-full bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700 transition duration-300 shadow-md transform active:scale-95">
                             Đăng nhập
                         </button>
                     </form>
 
-                    {/* 5. Dòng kẻ phân cách "Hoặc" */}
-                    <div className="mt-6 flex items-center justify-between">
-                        <span className="border-b w-1/5 lg:w-1/4 border-gray-300"></span>
-                        <span className="text-xs text-center text-gray-500 uppercase px-2">Hoặc đăng nhập với</span>
-                        <span className="border-b w-1/5 lg:w-1/4 border-gray-300"></span>
-                    </div>
-
-                    {/* 6. Các nút Mạng xã hội (Giao diện mẫu) */}
-                    <div className="mt-6 grid grid-cols-2 gap-3">
-                        <button className="flex items-center justify-center w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm bg-white hover:bg-gray-50 transition">
-                            <img src="https://www.svgrepo.com/show/475656/google-color.svg" className="h-5 w-5 mr-2" alt="Google" />
-                            <span className="text-sm font-medium text-gray-700">Google</span>
-                        </button>
-                        <button className="flex items-center justify-center w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm bg-white hover:bg-gray-50 transition">
-                            <img src="https://www.svgrepo.com/show/475647/facebook-color.svg" className="h-5 w-5 mr-2" alt="Facebook" />
-                            <span className="text-sm font-medium text-gray-700">Facebook</span>
-                        </button>
-                    </div>
-
-                    {/* 7. Footer chuyển sang đăng ký */}
+                    {/* Footer chuyển sang đăng ký */}
                     <div className="mt-8 text-center">
                         <p className="text-gray-600 text-sm">
                             Chưa có tài khoản?{" "}

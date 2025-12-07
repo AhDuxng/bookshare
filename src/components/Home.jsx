@@ -1,13 +1,13 @@
-import { useEffect, useState } from "react"; // 1. Import hook của React
-import axios from "axios";                   // 2. Import thư viện gọi API
+import { useEffect, useState } from "react"; // Import hook của React
+import axios from "axios";                   // Import thư viện gọi API
 import Header from "./Header";
 import { Link } from "react-router-dom";
 
 function Home() {
-  // 3. Tạo kho chứa sách (ban đầu là rỗng)
+  // Tạo kho chứa sách (ban đầu là rỗng)
   const [books, setBooks] = useState([]);
 
-  // 4. Gọi API ngay khi trang web vừa hiện lên
+  // Gọi API ngay khi trang web vừa hiện lên
   useEffect(() => {
     // Gọi đến API Backend mình vừa viết hôm qua
     axios.get("http://localhost:3000/api/books")
