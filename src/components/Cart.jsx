@@ -174,7 +174,9 @@ function Cart() {
                                 <span className="font-bold text-gray-900 text-xl">{totalPrice.toLocaleString()}đ</span>
                             </div>
                         </div>
-                        <button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg shadow-md transition duration-300 transform hover:-translate-y-0.5" onClick={() => alert("Chức năng thanh toán đang phát triển!")}>
+                        <button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg shadow-md transition duration-300 transform hover:-translate-y-0.5" 
+                           onClick={() => navigate("/checkout")}
+                        >
                             Tiến hành Thanh toán
                         </button>
                     </div>

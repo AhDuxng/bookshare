@@ -4,6 +4,7 @@ const db = require('./db');
 const bcrypt = require('bcrypt');
 const multer = require('multer'); // Import multer để upload file
 const path = require('path');     // Import path để xử lý đường dẫn
+const { error } = require('console');
 
 const app = express();
 app.use(cors());
@@ -228,6 +229,46 @@ app.delete('/api/cart/:id', (req, res) => {
             return res.status(500).json({error: err.message});
         }
         res.json({message: "Đã xóa sản phẩm khỏi giỏ hàng"});
+    });
+});
+
+// API 10: Tạo đơn hàng
+app.post('/api/orders', (req, res) => {
+    const { user_id, full_name, phone, email, address, payment_method, cart_items, total_price } = req.body;
+
+    // 1. Insert vào bảng orders
+    const sqlOrder = `
+        INSERT INTO orders (user_id, full_name, phone, email, address, payment_method, total_price )
+        VALUES (?, ?, ?, ?, ?, ?, ?);
+    `;
+
+    db.query(sqlOrder, [user_id, full_name, phone, email, address, payment_method, total_price], (err, result) => {
+        if(err) {
+            console.error("Lỗi tạo đơn hàng", err);
+            return res.status(500).json({error: err.message});
+        }
+
+        const orderID = result.insertId;
+
+        // 2. Insert vào bảng order_items (Duyệt qua từng món trong giỏ)
+        const sqlOrderItem = "INSERT INTO order_items (order_id, book_id, quantity, price) VALUES ?";
+        const orderItemsData = cart_items.map(item => [orderID, item.book_id, item.quantity, item.price]);
+
+        db.query(sqlOrderItem, [orderItemsData], (err) => {
+            if(err) {
+                console.error("Lỗi lưu chi tiết đơn hàng", err);
+                return res.status(500).json({error: err.message});
+            }
+
+            // 3. Xóa giỏ hàng của user sau khi đặt thành công
+            const sqlClearCart = "DELETE FROM cart WHERE user_id = ?";
+            db.query(sqlClearCart, [user_id], (err) => {
+                if (err) {
+                    console.error("Lỗi không thể xóa giỏ hàng:", err);
+                    return res.status(500).json({error: err.message});
+                }
+            });
+        });
     });
 });
 
