@@ -39,7 +39,7 @@ function Header() {
 
   return (
     <header className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm font-sans">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           
           {/* --- PHẦN 1: LOGO & HAMBURGER --- */}
@@ -63,7 +63,7 @@ function Header() {
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8 text-blue-600 group-hover:text-blue-700 transition">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
               </svg>
-              <span className="text-xl font-bold text-gray-800 tracking-tight group-hover:text-blue-700 transition hidden sm:block">Sách Cũ Hay</span>
+              <span className="text-xl font-bold text-gray-600 tracking-tight group-hover:text-blue-700 transition hidden sm:block">Sách Cũ Hay</span>
               <span className="text-xl font-bold text-gray-800 tracking-tight group-hover:text-blue-700 transition sm:hidden">SCH</span>
             </Link>
           </div>
@@ -73,8 +73,8 @@ function Header() {
             <Link to="/" className="text-gray-600 font-semibold px-4 py-2 rounded-md hover:bg-blue-100 hover:text-blue-600 transition">Trang chủ</Link>
             <Link to="/" className="text-gray-600 font-medium px-4 py-2 rounded-md hover:text-blue-600 hover:bg-blue-100 transition">Danh mục</Link>
             <Link to="/add-book" className="text-gray-600 font-medium px-4 py-2 rounded-md hover:text-blue-600 hover:bg-blue-100 transition">Bán Sách</Link>
-            <Link to="/" className="text-gray-600 font-medium px-4 py-2 rounded-md hover:text-blue-600 hover:bg-blue-100 transition">Giới thiệu</Link>
-            <Link to="/" className="text-gray-600 font-medium px-4 py-2 rounded-md hover:text-blue-600 hover:bg-blue-100 transition">Liên hệ</Link>
+            <Link to="/about" className="text-gray-600 font-medium px-4 py-2 rounded-md hover:text-blue-600 hover:bg-blue-100 transition">Giới thiệu</Link>
+            <Link to="/contact" className="text-gray-600 font-medium px-4 py-2 rounded-md hover:text-blue-600 hover:bg-blue-100 transition">Liên hệ</Link>
           </nav>
 
           {/* --- PHẦN 3: ICONS --- */}
@@ -102,23 +102,21 @@ function Header() {
                  </svg>
             </button>
 
-            <div className="relative cursor-pointer text-gray-700 hover:text-blue-600 transition p-2">
+            <Link to="/cart" className="relative cursor-pointer text-gray-700 hover:text-blue-600 transition p-2">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-7 h-7">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 5c.07.286.07.586 0 .872l-1.263 5a2.25 2.25 0 01-2.182 1.821H6.83a2.25 2.25 0 01-2.182-1.821l-1.263-5a2.25 2.25 0 010-.872l1.263-5a2.25 2.25 0 012.182-1.821h10.278a2.25 2.25 0 012.182 1.821z" />
               </svg>
               <span className="absolute top-1 right-0 bg-red-600 text-white text-[10px] font-bold h-4 w-4 rounded-full flex items-center justify-center border-2 border-white">
                 {cartCount}
               </span>
-            </div>
+            </Link>
 
-            {/* --- PHẦN BẠN CẦN CHÚ Ý ĐỂ SỬA LỖI --- */}
             {user ? (
               <div className="relative group cursor-pointer flex items-center gap-2">
                  <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold border border-blue-200">
                     {user.username.charAt(0).toUpperCase()}
                  </div>
                  
-                 {/* SỬA: Thay 'mt-2' bằng 'pt-2' ở đây để tạo cầu nối */}
                  <div className="absolute right-0 top-full pt-2 w-48 hidden group-hover:block z-50">
                     {/* Di chuyển các class bg-white, shadow, border vào thẻ con bên trong */}
                     <div className="bg-white shadow-xl rounded-lg border border-gray-100 py-2">

@@ -4,6 +4,9 @@ import BookDetail from "./components/BookDetail";
 import AddBook from "./components/AddBook";
 import Login from "./components/Login";
 import Register from "./components/Register";
+import About from "./components/About";
+import Contact from "./components/Contact";
+import Cart from "./components/Cart";
 
 function App() {
   return (
@@ -13,6 +16,9 @@ function App() {
       <Route path="/add-book" element={<AddBook />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+      <Route path="/about" element={<About />} />
+      <Route path="/contact" element={<Contact />} />
+      <Route path="/cart" element={<Cart />} />
     </Routes>
   );
 }
