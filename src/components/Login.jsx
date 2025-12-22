@@ -3,6 +3,7 @@ import axios from "axios";
 import { useNavigate, Link } from "react-router-dom";
 import Header from "./Header";
 import SuccessPopup from "./SuccessPopup";
+import { FormInput } from "./common";
 
 function Login() {
     const [username, setUsername] = useState("");
@@ -16,7 +17,12 @@ function Login() {
         e.preventDefault();
         axios.post("http://localhost:3000/api/login", { username, password })
             .then((res) => {    
+                // Save both user info and token
+                if (res.data.token) {
+                    localStorage.setItem("token", res.data.token);
+                }
                 localStorage.setItem("user", JSON.stringify(res.data.user));
+                localStorage.setItem("userId", res.data.user?.id);
                 setShowPopup(true);
             })
             .catch((err) => {

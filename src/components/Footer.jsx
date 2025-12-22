@@ -3,72 +3,57 @@ import { Link } from 'react-router-dom';
 
 function Footer() {
   return (
-    <footer className="bg-white border-t border-gray-200 pt-12 pb-8 mt-12">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
-        {/* Lưới chia cột */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
-          
-          {/* Cột 1: Về Chúng Tôi */}
-          <div>
-            <h3 className="text-sm font-bold text-gray-900 uppercase mb-4">Về Chúng Tôi</h3>
-            <ul className="space-y-3 text-sm text-gray-500">
-              <li><Link to="/" className="hover:text-blue-600 transition">Về Sách Cũ Hay</Link></li>
-              <li><Link to="/" className="hover:text-blue-600 transition">Cơ hội việc làm</Link></li>
-              <li><Link to="/" className="hover:text-blue-600 transition">Blog</Link></li>
-            </ul>
-          </div>
-
-          {/* Cột 2: Hỗ Trợ */}
-          <div>
-            <h3 className="text-sm font-bold text-gray-900 uppercase mb-4">Hỗ trợ</h3>
-            <ul className="space-y-3 text-sm text-gray-500">
-              <li><Link to="/" className="hover:text-blue-600 transition">Trung tâm trợ giúp</Link></li>
-              <li><Link to="/" className="hover:text-blue-600 transition">Chính sách bảo mật</Link></li>
-              <li><Link to="/" className="hover:text-blue-600 transition">Điều khoản dịch vụ</Link></li>
-            </ul>
-          </div>
-
-          {/* Cột 3: Chính Sách */}
-          <div>
-            <h3 className="text-sm font-bold text-gray-900 uppercase mb-4">Chính sách</h3>
-            <ul className="space-y-3 text-sm text-gray-500">
-              <li><Link to="/" className="hover:text-blue-600 transition">Chính sách đổi trả</Link></li>
-              <li><Link to="/" className="hover:text-blue-600 transition">Chính sách vận chuyển</Link></li>
-              <li><Link to="/" className="hover:text-blue-600 transition">Phương thức thanh toán</Link></li>
-            </ul>
-          </div>
-
-          {/* Cột 4: Kết nối với chúng tôi (Mạng xã hội) */}
-          <div>
-            <h3 className="text-sm font-bold text-gray-900 uppercase mb-4">Kết nối với chúng tôi</h3>
-            <div className="flex space-x-4">
-              {/* Facebook Icon */}
-              <a href="#" className="text-gray-400 hover:text-blue-600 transition">
-                <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24"><path fillRule="evenodd" d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" clipRule="evenodd" /></svg>
-              </a>
-              {/* Twitter Icon */}
-              <a href="#" className="text-gray-400 hover:text-blue-400 transition">
-                <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24"><path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84" /></svg>
-              </a>
-              {/* Instagram Icon */}
-              <a href="#" className="text-gray-400 hover:text-pink-600 transition">
-                <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24"><path fillRule="evenodd" d="M12.315 2c2.43 0 2.784.013 3.808.06 1.064.049 1.791.218 2.427.465a4.902 4.902 0 011.772 1.153 4.902 4.902 0 011.153 1.772c.247.636.416 1.363.465 2.427.048 1.067.06 1.407.06 4.123v.08c0 2.643-.012 2.987-.06 4.043-.049 1.064-.218 1.791-.465 2.427a4.902 4.902 0 01-1.153 1.772 4.902 4.902 0 01-1.772 1.153c-.636.247-1.363.416-2.427.465-1.067.048-1.407.06-4.123.06h-.08c-2.643 0-2.987-.012-4.043-.06-1.064-.049-1.791-.218-2.427-.465a4.902 4.902 0 01-1.772-1.153 4.902 4.902 0 01-1.153-1.772c-.247-.636-.416-1.363-.465-2.427-.047-1.024-.06-1.379-.06-3.808v-.63c0-2.43.013-2.784.06-3.808.049-1.064.218-1.791.465-2.427a4.902 4.902 0 011.153-1.772A4.902 4.902 0 015.468 2.9c.636-.247 1.363-.416 2.427-.465C8.901 2.013 9.256 2 11.685 2h.63zm-.081 1.802h-.468c-2.456 0-2.784.011-3.807.058-.975.045-1.504.207-1.857.344-.467.182-.8.398-1.15.748-.35.35-.566.683-.748 1.15-.137.353-.3.882-.344 1.857-.047 1.023-.058 1.351-.058 3.807v.468c0 2.456.011 2.784.058 3.807.045.975.207 1.504.344 1.857.182.466.399.8.748 1.15.35.35.683.566 1.15.748.353.137.882.3 1.857.344 1.054.048 1.37.058 4.041.058h.08c2.597 0 2.917-.01 3.96-.058.976-.045 1.505-.207 1.858-.344.466-.182.8-.398 1.15-.748.35-.35.566-.683.748-1.15.137-.353.3-.882.344-1.857.048-1.055.058-1.37.058-4.041v-.08c0-2.597-.01-2.917-.058-3.96-.045-.976-.207-1.505-.344-1.858a3.097 3.097 0 00-.748-1.15 3.098 3.098 0 00-1.15-.748c-.353-.137-.882-.3-1.857-.344-1.023-.047-1.351-.058-3.807-.058zM12 6.865a5.135 5.135 0 110 10.27 5.135 5.135 0 010-10.27zm0 1.802a3.333 3.333 0 100 6.666 3.333 3.333 0 000-6.666zm5.338-3.205a1.2 1.2 0 110 2.4 1.2 1.2 0 010-2.4z" clipRule="evenodd" /></svg>
-              </a>
+    <footer className="bg-white dark:bg-surface-dark border-t border-slate-200 dark:border-slate-800 py-12 mt-auto">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
+                <div className="flex flex-col gap-5">
+                    <div className="flex items-center gap-3 text-primary">
+                        <svg className="size-9 drop-shadow-sm" fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M24 18.4228L42 11.475V34.3663C42 34.7796 41.7457 35.1504 41.3601 35.2992L24 42V18.4228Z" fill="currentColor"></path>
+                            <path clipRule="evenodd" d="M24 8.18819L33.4123 11.574L24 15.2071L14.5877 11.574L24 8.18819ZM9 15.8487L21 20.4805V37.6263L9 32.9945V15.8487ZM27 37.6263V20.4805L39 15.8487V32.9945L27 37.6263ZM25.354 2.29885C24.4788 1.98402 23.5212 1.98402 22.646 2.29885L4.98454 8.65208C3.7939 9.08038 3 10.2097 3 11.475V34.3663C3 36.0196 4.01719 37.5026 5.55962 38.098L22.9197 44.7987C23.6149 45.0671 24.3851 45.0671 25.0803 44.7987L42.4404 38.098C43.9828 37.5026 45 36.0196 45 34.3663V11.475C45 10.2097 44.2061 9.08038 43.0155 8.65208L25.354 2.29885Z" fill="currentColor" fillRule="evenodd"></path>
+                        </svg>
+                        <span className="text-text-primary dark:text-white text-2xl font-black tracking-tight">BookMarket</span>
+                    </div>
+                    <p className="text-text-secondary dark:text-gray-400 text-sm leading-relaxed">
+                        Nền tảng kết nối cộng đồng yêu sách, giúp việc trao đổi và mua bán sách trở nên dễ dàng, an toàn và văn minh.
+                    </p>
+                </div>
+                <div className="flex flex-col gap-4">
+                    <h4 className="text-text-primary dark:text-white font-bold text-lg">Về chúng tôi</h4>
+                    <Link to="#" className="text-text-secondary dark:text-gray-400 text-sm font-medium hover:text-primary transition-colors">Giới thiệu</Link>
+                    <Link to="#" className="text-text-secondary dark:text-gray-400 text-sm font-medium hover:text-primary transition-colors">Quy chế hoạt động</Link>
+                    <Link to="#" className="text-text-secondary dark:text-gray-400 text-sm font-medium hover:text-primary transition-colors">Chính sách bảo mật</Link>
+                </div>
+                <div className="flex flex-col gap-4">
+                    <h4 className="text-text-primary dark:text-white font-bold text-lg">Hỗ trợ</h4>
+                    <Link to="#" className="text-text-secondary dark:text-gray-400 text-sm font-medium hover:text-primary transition-colors">Trung tâm trợ giúp</Link>
+                    <Link to="#" className="text-text-secondary dark:text-gray-400 text-sm font-medium hover:text-primary transition-colors">Hướng dẫn mua hàng</Link>
+                    <Link to="#" className="text-text-secondary dark:text-gray-400 text-sm font-medium hover:text-primary transition-colors">Hướng dẫn bán hàng</Link>
+                </div>
+                <div className="flex flex-col gap-4">
+                    <h4 className="text-text-primary dark:text-white font-bold text-lg">Liên hệ</h4>
+                    <div className="flex items-center gap-3 text-text-secondary dark:text-gray-400 text-sm font-medium">
+                        <span className="material-symbols-outlined text-primary text-[20px]">mail</span>
+                        hotro@bookmarket.vn
+                    </div>
+                    <div className="flex items-center gap-3 text-text-secondary dark:text-gray-400 text-sm font-medium">
+                        <span className="material-symbols-outlined text-primary text-[20px]">call</span>
+                        1900 1234
+                    </div>
+                    <div className="flex gap-4 mt-3">
+                        <a href="#" className="w-10 h-10 rounded-full bg-gray-50 dark:bg-gray-800 flex items-center justify-center text-text-secondary dark:text-gray-400 hover:bg-primary hover:text-white transition-all shadow-sm"><span className="material-symbols-outlined text-xl">public</span></a>
+                        <a href="#" className="w-10 h-10 rounded-full bg-gray-50 dark:bg-gray-800 flex items-center justify-center text-text-secondary dark:text-gray-400 hover:bg-primary hover:text-white transition-all shadow-sm"><span className="material-symbols-outlined text-xl">share</span></a>
+                    </div>
+                </div>
             </div>
-          </div>
-
+            <div className="border-t border-gray-100 dark:border-gray-800 mt-14 pt-8 flex flex-col sm:flex-row justify-between items-center gap-6">
+                <p className="text-text-secondary dark:text-gray-500 text-sm font-medium">© 2023 BookMarket. All rights reserved.</p>
+                <div className="flex gap-6">
+                    <img alt="Mastercard" className="h-7 opacity-50 grayscale hover:grayscale-0 hover:opacity-100 transition-all cursor-pointer" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA9vKKVwB8XoSJSjlBeaC7017LNNt_SP0ArDWxTfOQovYgYPcvAx3jbsnOuPdJiQW-bdTmVo9meaSx62inC08hdnOF9yJ6a2LRRo2m60qEA2jmzEXYU_bYpMYTlZTAitf5PA35MNUsof8OwEZHBCy4wx7peNjCRHsfkTZyI_w0u5htYbRWdy1dIytWGPb3SLNKA4Uz9WTsR2jIsYintX6wJ8tJVu7hAgtrVGxL03wBCVokNiQHUjPFrCbqsC9cM0gYy0YcMk8oWlw"/>
+                    <img alt="Visa" className="h-7 opacity-50 grayscale hover:grayscale-0 hover:opacity-100 transition-all cursor-pointer" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDvE8bhGujdYEa_tYOGNuJX9G3OPeHOYTPDBHGrZT_cVicfwmLXjAya8uVwpJor4wiAuHP9KhKqc64WGXP-0Put9A0UPJd2EWvIB-9h4oHtISxVhPApZqNZ2mlsSWFRyhhX6xf6TIBrZLMGwVmfy4md2d_4mqwjPgvQ_O092Kig-ywkdloTaMXB8ewie-x-JXWq_egcj-kbmh5LzyXOljlDD4CP6GZESbEIDSaS5cLxWARMUGtIBSqe3H4q83PkXQ2qm6cQwkbvAw"/>
+                </div>
+            </div>
         </div>
-
-        {/* Dòng Copyright */}
-        <div className="border-t border-gray-100 pt-8 flex flex-col md:flex-row justify-between items-center">
-          <p className="text-xs text-gray-400 mx-auto">© 2024 Sách Cũ Hay. All Rights Reserved.</p>
-          <div className="flex space-x-6 mt-4 md:mt-0">
-             {/* Có thể thêm icon thanh toán ở đây nếu muốn */}
-          </div>
-        </div>
-
-      </div>
     </footer>
   );
 }

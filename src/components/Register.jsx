@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import Header from "./Header"; 
 import SuccessPopup from "./SuccessPopup";
+import { FormInput } from "./common";
 
 function Register() {
     const navigate = useNavigate();
@@ -53,10 +54,28 @@ function Register() {
             }
         } catch (error) {
             console.error("Lỗi đăng ký:", error);
-            // Kiểm tra nếu lỗi do tài khoản đã tồn tại (thường backend trả về 400 hoặc 409)
+            
+            // Kiểm tra nếu lỗi do tài khoản đã tồn tại hoặc lỗi khác từ backend
             if (error.response && error.response.data) {
-                alert(`❌ Lỗi: ${error.response.data.message || "Đăng ký thất bại"}`);
+                const errorData = error.response.data;
+                let errorMessage = errorData.message || "Đăng ký thất bại";
+                
+                // Thêm hint nếu có
+                if (errorData.hint) {
+                    errorMessage += `\n\n💡 ${errorData.hint}`;
+                }
+                
+                alert(`❌ ${errorMessage}`);
+                
+                // Log thêm thông tin để debug
+                if (errorData.code) {
+                    console.error('Error code:', errorData.code);
+                }
+            } else if (error.request) {
+                // Request được gửi nhưng không nhận được response
+                alert("❌ Không thể kết nối đến server. Vui lòng kiểm tra server có đang chạy không.");
             } else {
+                // Lỗi khác
                 alert("❌ Có lỗi xảy ra, vui lòng thử lại sau.");
             }
         }

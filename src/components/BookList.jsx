@@ -1,86 +1,195 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { SectionHeader, BookCard } from './common';
 
 function BookList({ books }) {
-  const renderStars = () => (
-    <div className="flex text-yellow-400 text-xs">
-      {[...Array(5)].map((_, i) => (
-        <svg key={i} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
-          <path fillRule="evenodd" d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.007 5.404.433c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.433 2.082-5.006z" clipRule="evenodd" />
-        </svg>
-      ))}
-    </div>
-  );
+  const navigate = useNavigate();
+  const [latestBooks, setLatestBooks] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  if (books.length === 0) {
-    return <p className="text-center text-gray-500 py-10">Chưa có sách nào được đăng bán.</p>;
-  }
+  // Lấy danh sách sách mới nhất từ API
+  useEffect(() => {
+    const fetchLatestBooks = async () => {
+      try {
+        const response = await axios.get('http://localhost:3000/api/books/search', {
+          params: {
+            page: 1,
+            limit: 10,
+            sort: 'created_at',
+            query: '' // Truyền empty query để lấy tất cả
+          }
+        });
+        console.log('API Response:', response.data);
+        const booksData = response.data.books || response.data || [];
+        setLatestBooks(booksData);
+      } catch (error) {
+        console.error('Lỗi khi lấy sách mới:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchLatestBooks();
+  }, []);
+  // Dữ liệu giả lập cho phần "Sách mới đăng" (Nếu books rỗng hoặc chưa có API)
+  // Trong thực tế, bạn sẽ dùng prop `books` truyền vào
+  const dummyBooks = [
+    {
+      id: 101,
+      title: "Nhà Giả Kim",
+      author: "Paulo Coelho",
+      price: "60.000đ",
+      image: "https://lh3.googleusercontent.com/aida-public/AB6AXuA8O6uM9Qag43j78qpwkxjrDCUq47xMxyEIlpHsBdQLj2tVYMYwWGwNoToFi4IQFAEX08U75XrTtLAL_0WLzGUsdSbnhm88wPm8tKPBOvSwK8nIEvmeR9a1uDf0Jy20E4xP93q0UIVEXZ8__NOZWT9o525wpCWw4cKpuPDYFA_oeQCeNGJHdx5KJ5t73AxgYr8tdhOSTyDDpLeChWautbvi8IBMzjkhC9iD22yjvF2-8YI68qOB2lkfICpInp6WUHKXPGUecXClUQ",
+      condition: "Mới 90%",
+      conditionColor: "green",
+      bottomBadge: (
+        <>
+          <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
+          5 phút trước
+        </>
+      ),
+      user: {
+        name: "Đức Thịnh",
+        avatar: "https://lh3.googleusercontent.com/aida-public/AB6AXuB7WfNVlv6AVS-2aQoMRLFH4Fh16d3F-EC9VcIAvDV7KWuSc2CLynPExENBuJ88rtRPrQE0-kfItf7_EXCs67xF92B6M6TVsMHcAV_BR6iA6g2HvphJ5orE-bd_WZBab61_l6TBxDYmhgoio6cJA7qfuvGF8IOqmTTMPMTmxYawKUv1Xd_wnQ5yc9U4aWxa2IBEpXcAb9vIVoXFC2wPCupqNYVONLd8zQj76xYiUey8CIHvMIk-tvfvAON7vZHH40qc267MUw2-yQ"
+      }
+    },
+    {
+      id: 102,
+      title: "1984",
+      author: "George Orwell",
+      price: "95.000đ",
+      image: "https://lh3.googleusercontent.com/aida-public/AB6AXuB8jRLD2VuAAF_kGeQhFLBeeS-s_z1N_dCCB1lLJy-jKRn66MmxJV66ROPaNvgvVQfFfsVsGKQI4i-noFekn2A-urAkHT8Tre4OQZideQ3NeFGKV-AYnOgSiFwQrpXPA-18-0rfEmx6WuRdQf27vK0JvvRlT34CipSgkhDwt5r3W-G3XI9bdTwIMKCL6vKV9K8Y-1Bv5GKzW0l4NSWvyxbRREpda5vYp5ZzmkO-yegaBhtBMlcnTmIqkihe-T58UVDbtzqovwqEAg",
+      condition: "Mới 100%",
+      conditionColor: "blue",
+      bottomBadge: (
+        <>
+          <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+          15 phút trước
+        </>
+      ),
+      user: {
+        name: "Mai Phương",
+        avatar: "https://lh3.googleusercontent.com/aida-public/AB6AXuCHozbjQreLvLTto6s5QKJjFjzJa6s1GWenn2JwSJZrwO-SqNICbxRg1oAAPw6DKueajR0dJPLmqlEfPXOyZaO70rVJFovLg_cKU7LuG1Jh0Z9R5HirfeZus3iUimIVH9L9LKHRy8PeTXUHW_swfs2In_7jbKwXa2uoxFWuSWaVPgwl0Kx678nv04XHNFtz6eu6tdmOjFltEnVByyLIgW7kKMrArpfSp5z_8VC4stgWTo3DHV4nVfvOQNHMpTfBCFHBsVwotuzjOQ"
+      }
+    },
+    {
+      id: 103,
+      title: "Harry Potter và Hòn đá Phù thủy",
+      author: "J.K. Rowling",
+      price: "150.000đ",
+      image: "https://lh3.googleusercontent.com/aida-public/AB6AXuB-7UvwzjdjFz5-il-lLQkQvRFSWQKDdsSR1d4nhvSHPRfamBfZYpF8Ivb0ZBeYQAX6Hx7m4RTr1ljcidmloZn9tEsT8fOM_ojNA-K65soBgDcxfg8LkF-WtE-RFhoFrroZ05qSrXUhhk0vtTNSuyVx1mEzJrDrONxb4K4_hXq8hp-pQ1C0mg-ROb1J2OCTaUuMjln7JJenlGJ5fvMLPJ1MeC1NFcQqjxF0EQl7NvdjxaTmxcwpqQ7D6aej4sWc6_PSrJPLYQYxfA",
+      condition: "Mới 85%",
+      conditionColor: "green",
+      bottomBadge: (
+        <>
+          <span className="material-symbols-outlined text-[10px]">schedule</span>
+          1 giờ trước
+        </>
+      ),
+      user: {
+        name: "Trung Kiên",
+        avatar: "https://lh3.googleusercontent.com/aida-public/AB6AXuAdAAzd8zqkXF7fDXYc858I523kO6yJfzY5nokOCzCipWhufrZTYRZ1pYJpsyPqt0Ww4-_1oO-46dv5lT9Yuz9xB6KtKHpmgwRPJgMP0ZySW9mfUQthmzpVMBFESVuRL1ArQmQtdvYUn09do3OC48eXZvjKpCFc8HBVId-U5G13JT_Rsr0QdOwjL0XgJHXT6VBQ4SKLWwlzs7S_9IHuw-IZttwKJuRNeOlpLtVJIiU56GM8Dj5w583uuEUDE512FhoSXll7dWdF5Q"
+      }
+    },
+    {
+      id: 104,
+      title: "Cha giàu cha nghèo",
+      author: "Robert Kiyosaki",
+      price: "80.000đ",
+      image: "https://lh3.googleusercontent.com/aida-public/AB6AXuDG0VvRctEFjvgq3vcp2YV6R2SEp8I0kifdHsS2RUcf9u-EoaOHKKIZ6feiGNNyQxlurD_bSb57JiblBjj51-jRMyERdEFai-tk8hHkmDiKqDeMk6DRJp_2zwUcYdqWvZBe1yNnDfTvMq0k0x5jl1Y8bbI09H-bClgD6cZzWkY95Z4BYRt401vyErGl4UBVoa4UeCFjS6eLOSI2zDEmt9075z2aM3M-xdnJz-ZpFowBaJ5jclNWku5H8_2wcI3LHdqsTPck9F5Y3A",
+      condition: "Khá tốt",
+      conditionColor: "gray",
+      bottomBadge: (
+        <>
+          <span className="material-symbols-outlined text-[10px]">schedule</span>
+          2 giờ trước
+        </>
+      ),
+      user: {
+        name: "Lan Anh",
+        avatar: "https://lh3.googleusercontent.com/aida-public/AB6AXuCs9cTlCdomdZ5cmDIi9FNf98iriv-lb_ddqAd8OgJ7hCSl5TJm00dHSchWrHeqhdm0mOg_m2z-KsQAuh91t8_MmMQtOX5y48TCb-3CFGy0_MhEUn-nwfol_inmH5Wso85Zqb_g5PJ2BNtxC-BZNgMxNQ0ei6_acZckXVEyFjzPlNeWKsiDRgdt7aNPe-2RQKvLIWb6mfy0u3pMp2Z8Fg1rfl0ALi9C0crueUbJXA33kET9CIhwc1HjcteFdAStAmDsGfUDaTtFhw"
+      }
+    },
+    {
+      id: 105,
+      title: "Tuyển tập Nam Cao",
+      author: "Nam Cao",
+      price: "115.000đ",
+      image: "https://lh3.googleusercontent.com/aida-public/AB6AXuDoiP3aLuBVIeJVcK22vU8RmOWd6vu_h5Nf0HgR24tzjZmT2BVHaZynYBDAzd0hivK_2NK0t-noq6FCCcWgWByp1mbGgywlcvR8FLcOSMilGDb00U-BTLyvKrRRCFDLSs1musbYlamMnhf-zu9v5i2NZ0P-qhLaXepauZhtyNcHQjlEO_K9kwbRcZzqDZ4BNyQHVcVb7fzwynD32qnYNTiCMQj2v42u8LLruhwmVLUlfwBPw9LGAsAA_3idSjADnWBupYB8pDFpIA",
+      condition: "Mới 100%",
+      conditionColor: "blue",
+      className: "hidden xl:flex",
+      bottomBadge: (
+        <>
+          <span className="material-symbols-outlined text-[10px]">schedule</span>
+          3 giờ trước
+        </>
+      ),
+      user: {
+        name: "Quốc Tuấn",
+        avatar: "https://lh3.googleusercontent.com/aida-public/AB6AXuCgrHw1uLLjxalTt1MGV7q-UduX72NZ324TEmAQJ98YVDRxTGd5hsSWtPDIJ9TTA2t_LCn2SPLUofyPyFCLyDLLyjM2Z88G3TA_novKyFccgBEPqnCGWBwc119EiMOvYfV7IrtVBBU3OInNi-jcazWHbKTMQT1kCuiJFswM5Ro3wwR3SOHn1FSjeGwOW7acMh5e168jCllZcDmGruCGPRoZDO8R-16AMtwqxSpUoROinyP_KfdgITySIedP6hfPDgnbXUC14x4DMg"
+      }
+    }
+  ];
+
+  const displayBooks = latestBooks.length > 0 ? latestBooks : [];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
-      <h2 className="text-2xl font-bold mb-6 text-gray-800">Sách mới đăng bán</h2>
-      
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {books.map((book) => (
-          <div key={book.id} className="bg-white border border-gray-100 rounded-md shadow-sm hover:shadow-xl transition-shadow duration-300 flex flex-col p-4">
-            
-            {/* Ảnh sách */}
-            <div className="h-56 w-full flex items-center justify-center bg-gray-50 overflow-hidden mb-4 relative group">
-               <img 
-                 src={book.image} 
-                 alt={book.title} 
-                 className="h-full object-contain mix-blend-multiply group-hover:scale-105 transition duration-300"
-                 onError={(e) => {e.target.src = "https://via.placeholder.com/150?text=No+Image"}} // Xử lý nếu ảnh lỗi
-               />
-            </div>
-
-            {/* Nội dung */}
-            <div className="flex-grow flex flex-col">
-                <Link to={`/book/${book.id}`}>
-                    <h3 className="font-bold text-gray-900 text-lg leading-tight mb-1 line-clamp-2 hover:text-blue-600 transition">
-                        {book.title}
-                    </h3>
-                </Link>
-                
-                <p className="text-sm text-gray-500 mb-2">
-                    Tác giả: <span className="font-medium text-gray-700">{book.author || "Chưa cập nhật"}</span>
-                </p>
-                
-                <p className="text-blue-600 font-bold text-xl mb-2">
-                    {book.price.toLocaleString()} đ
-                </p>
-
-                <div className="flex items-center gap-2 mb-4">
-                    {renderStars()}
-                    <span className="text-xs text-gray-400">(120)</span>
-                </div>
-            </div>
-
-            {/* Footer: Người bán & Nút Mua */}
-            <div className="flex items-center justify-between mt-auto pt-3 border-t border-gray-100">
-                <div className="flex items-center gap-2">
-                    <img 
-                        src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" 
-                        alt="User" 
-                        className="w-8 h-8 rounded-full border border-gray-200"
-                    />
-                    <span className="text-sm font-medium text-gray-600 truncate max-w-[100px]">
-                        {book.username || "Ẩn danh"}
-                    </span>
-                </div>
-
-                <Link 
-                    to={`/book/${book.id}`}
-                    className="bg-blue-500 hover:bg-blue-600 text-white text-sm font-bold py-2 px-4 rounded-lg transition shadow-md hover:shadow-lg"
-                >
-                    Mua ngay
-                </Link>
-            </div>
-
-          </div>
-        ))}
+    <section className="mt-8">
+      <div className="flex items-center justify-between mb-6">
+        <SectionHeader 
+          title="Sách mới đăng" 
+          iconColor="bg-red-500"
+          badge={{ text: "Mới nhất", color: "red" }}
+        />
+        <button
+          onClick={() => navigate('/browse')}
+          className="text-primary hover:text-primary-hover font-semibold text-sm flex items-center gap-1 transition-colors"
+        >
+          Xem tất cả
+          <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
+        </button>
       </div>
-    </div>
+      
+      {loading ? (
+        <div className="flex justify-center items-center py-20">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        </div>
+      ) : displayBooks.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-20 text-center">
+          <div className="w-20 h-20 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-4">
+            <span className="material-symbols-outlined text-[40px] text-slate-400">book</span>
+          </div>
+          <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">Chưa có sách nào</h3>
+          <p className="text-slate-500 text-sm">Hãy trở thành người đăng tin đầu tiên!</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-6 gap-y-10">
+          {displayBooks.map(book => {
+            // Map dữ liệu từ database
+            const bookData = {
+              id: book.id,
+              title: book.title,
+              author: book.author,
+              price: book.price ? `${Number(book.price).toLocaleString()}đ` : 'Liên hệ',
+              image: book.image_url,
+              condition: book.condition || 'good',
+              user: book.users ? {
+                name: book.users.username,
+                avatar: book.users.avatar_url
+              } : null
+            };
+            
+            return (
+              <BookCard 
+                key={book.id}
+                {...bookData}
+              />
+            );
+          })}
+        </div>
+      )}
+    </section>
   );
 }
 

@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Header from './Header';
 import Footer from './Footer';
+import { Badge, ActionButton } from './common';
 
 function Cart() {
   const navigate = useNavigate();

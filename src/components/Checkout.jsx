@@ -4,6 +4,7 @@ import axios from 'axios';
 import Header from './Header';
 import Footer from './Footer';
 import SuccessPopup from './SuccessPopup';
+import { FormInput, Badge, Button, InfoCard } from './common';
 
 function Checkout() {
     const navigate = useNavigate();
@@ -96,9 +97,11 @@ function Checkout() {
                     <div className="lg:col-span-2 space-y-6">
                         
                         {/* 1. Thông tin giao hàng */}
-                        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-                            <h2 className="text-xl font-bold text-gray-800 mb-4">Thông tin giao hàng</h2>
-                            
+                        <InfoCard
+                            icon="local_shipping"
+                            iconColor="blue"
+                            title="Thông tin giao hàng"
+                        >
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                                 <div>
                                     <label className="block text-sm font-semibold text-gray-700 mb-1">Họ và tên</label>
@@ -139,11 +142,14 @@ function Checkout() {
                                     placeholder="Số nhà, tên đường, phường/xã, quận/huyện, tỉnh/thành phố"
                                 />
                             </div>
-                        </div>
+                        </InfoCard>
 
                         {/* 2. Phương thức thanh toán */}
-                        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-                            <h2 className="text-xl font-bold text-gray-800 mb-4">Phương thức thanh toán</h2>
+                        <InfoCard
+                            icon="payment"
+                            iconColor="green"
+                            title="Phương thức thanh toán"
+                        >
                             <div className="space-y-3">
                                 {/* COD */}
                                 <label className={`flex items-center p-4 border rounded-lg cursor-pointer transition ${paymentMethod === 'COD' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:bg-gray-50'}`}>
@@ -178,7 +184,7 @@ function Checkout() {
                                     <span className="ml-3 font-medium text-gray-700">Ví điện tử (Momo, ZaloPay)</span>
                                 </label>
                             </div>
-                        </div>
+                        </InfoCard>
 
                         {/* Nút điều hướng Desktop */}
                         <div className="hidden lg:flex justify-between items-center mt-6">

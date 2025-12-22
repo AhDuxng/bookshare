@@ -1,300 +1,557 @@
-import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import axios from "axios";
-import Header from "./Header";
+import React, { useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import Header from './Header';
+import Footer from './Footer';
+import { useImageUpload } from '../hooks/useImageUpload';
+import { usePostForm } from '../hooks/usePostForm';
+import { PostPreview } from './PostPreview';
+import { ModalPopup } from './ModalPopup';
+import { IconBox, FormInput, FormSelect, FormTextarea } from './common';
 
 function AddBook() {
-    const navigate = useNavigate();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const {
+    files,
+    previews,
+    uploading,
+    progress,
+    error: uploadError,
+    addFiles,
+    removeAt,
+    uploadAll,
+  } = useImageUpload();
 
-    // Dữ liệu danh mục
-    const [categories, setCategories] = useState([
-        "Văn học", "Kinh tế", "Tâm lý", "Kỹ năng sống", 
-        "Sách thiếu nhi", "Lịch sử", "Khoa học"
-    ]);
+  const {
+    formData,
+    updateField,
+    setImages,
+    submitting,
+    message,
+    submit,
+    saveDraftNow,
+    categories,
+  } = usePostForm();
 
-    // State cho thêm danh mục
-    const [isAddingCat, setIsAddingCat] = useState(false);
-    const [newCatName, setNewCatName] = useState("");
+  const [isDragging, setIsDragging] = useState(false);
+  const [popup, setPopup] = useState({ open: false, type: 'info', title: '', message: '' });
+  const [redirectId, setRedirectId] = useState(null);
 
-    // State cho tab chọn ảnh: 'link' hoặc 'upload'
-    const [imageTab, setImageTab] = useState('link');
+  // Nhận dữ liệu từ trang xem trước để điền lại form
+  useEffect(() => {
+    const incoming = location.state?.draft;
+    if (incoming) {
+      updateField('title', incoming.title || '');
+      updateField('description', incoming.description || '');
+      updateField('price', incoming.price || '');
+      if (incoming.images?.length) {
+        setImages(incoming.images);
+      }
+    }
+  }, [location.state, setImages, updateField]);
 
-    const [form, setForm] = useState({
-        title: "",
-        author: "",
-        category: "Văn học",
-        condition: 80,
-        description: "",
-        price: "",
-        image: "" 
-    });
+  // Đồng bộ ảnh đã upload vào form
+  useEffect(() => {
+    const uploaded = previews.filter(p => p.remoteUrl).map(p => p.remoteUrl);
+    if (uploaded.length) {
+      setImages(uploaded);
+    }
+  }, [previews, setImages]);
 
-    const [previewImage, setPreviewImage] = useState(null);
+  const handleImageSelect = (e) => {
+    if (e.target.files && e.target.files.length > 0) {
+      addFiles(e.target.files);
+    }
+  };
 
-    useEffect(() => {
-        const user = localStorage.getItem("user");
-        if (!user) {
-            alert("Bạn cần đăng nhập để bán sách");
-            navigate("/login");
-        }
-    }, [navigate]);
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
 
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setForm({ ...form, [name]: value });
-    };
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
 
-    const handleCategorySelect = (cat) => {
-        setForm({ ...form, category: cat });
-    };
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    const filesDropped = e.dataTransfer.files;
+    if (filesDropped && filesDropped.length > 0) {
+      addFiles(filesDropped);
+    }
+  };
 
-    const handleAddNewCategory = () => {
-        if (!newCatName.trim()) {
-            setIsAddingCat(false);
-            return;
-        }
-        const newCategory = newCatName.trim();
-        setCategories([...categories, newCategory]);
-        setForm({ ...form, category: newCategory });
-        setNewCatName("");
-        setIsAddingCat(false);
-    };
+  const handleRemoveImage = (index) => {
+    removeAt(index);
+  };
 
-    // --- XỬ LÝ ẢNH ---
-    
-    // 1. Nếu nhập Link
-    const handleImageLinkChange = (e) => {
-        const url = e.target.value;
-        setForm({ ...form, image: url });
-        setPreviewImage(url);
-    };
+  const handleUploadImages = async () => {
+    if (!files.length) {
+      setPopup({ open: true, type: 'info', title: 'Chưa chọn ảnh', message: 'Vui lòng thêm ít nhất 1 ảnh trước khi tải lên.' });
+      return;
+    }
+    try {
+      const urls = await uploadAll();
+      setImages(urls);
+      setPopup({ open: true, type: 'success', title: 'Upload thành công', message: `Đã tải lên ${urls.length} ảnh.` });
+    } catch (err) {
+      console.error('Lỗi upload:', err);
+      setPopup({ open: true, type: 'error', title: 'Upload thất bại', message: err.message || 'Vui lòng thử lại.' });
+    }
+  };
 
-    // Xử lý khi tải file từ máy
-    const handleFileUpload = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            const objectUrl = URL.createObjectURL(file);
-            setPreviewImage(objectUrl);
-            
-            // --- SỬA QUAN TRỌNG: Lưu nguyên đối tượng File vào state ---
-            setForm({ ...form, image: file }); 
-        }
-    };
-
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        if (!form.title || !form.price) {
-            alert("Vui lòng nhập tiêu đề và giá bán!");
-            return;
-        }
-
-        const user = JSON.parse(localStorage.getItem("user"));
-        const userId = user ? user.id : null;
-
-        // --- SỬA QUAN TRỌNG: Dùng FormData để gửi file ---
-        const formData = new FormData();
-        formData.append("title", form.title);
-        formData.append("author", form.author);
-        formData.append("category", form.category);
-        formData.append("condition", form.condition);
-        formData.append("description", form.description);
-        formData.append("price", form.price);
-        formData.append("user_id", userId);
+  const handlePublish = async () => {
+    try {
+      let uploadedUrls = formData.images || [];
+      
+      // Kiểm tra xem có file nào được chọn không
+      if (files.length > 0) {
+        // Kiểm tra xem có ảnh nào chưa upload không
+        const hasUnuploadedImages = previews.some(p => !p.remoteUrl);
         
-        // Form.image có thể là String (Link) hoặc File (Upload)
-        // Backend (multer) sẽ tự xử lý
-        formData.append("image", form.image); 
+        if (hasUnuploadedImages) {
+          setPopup({ open: true, type: 'info', title: 'Đang tải ảnh', message: 'Vui lòng chờ trong khi chúng tôi tải ảnh lên...' });
+          try {
+            const urls = await uploadAll();
+            console.log('✅ Upload thành công, URLs:', urls);
+            if (!urls || urls.length === 0) {
+              throw new Error('Không nhận được URL sau khi upload');
+            }
+            // Lưu URLs vào biến local và set vào form
+            uploadedUrls = urls;
+            setImages(urls);
+          } catch (uploadErr) {
+            setPopup({ open: false });
+            throw new Error('Upload ảnh thất bại: ' + uploadErr.message);
+          }
+          setPopup({ open: false });
+        } else {
+          // Nếu đã upload rồi, lấy từ previews
+          uploadedUrls = previews.filter(p => p.remoteUrl).map(p => p.remoteUrl);
+          if (uploadedUrls.length === 0) {
+            uploadedUrls = formData.images;
+          }
+        }
+      }
+      
+      // Kiểm tra uploadedUrls thay vì formData.images (tránh race condition)
+      if (!uploadedUrls || uploadedUrls.length === 0) {
+        throw new Error('Cần ít nhất 1 ảnh. Vui lòng tải ảnh lên trước.');
+      }
 
-        axios.post("http://localhost:3000/api/books", formData, {
-            headers: {
-                "Content-Type": "multipart/form-data", // Bắt buộc khi gửi file
-            },
-        })
-        .then(() => {
-            alert("✅ Đăng bán thành công!");
-            navigate("/");
-        })
-        .catch((error) => {
-            console.error("Lỗi:", error);
-            alert("❌ Có lỗi xảy ra.");
-        });
+      // Đảm bảo formData có images trước khi submit
+      if (formData.images.length === 0) {
+        setImages(uploadedUrls);
+        await new Promise(resolve => setTimeout(resolve, 50));
+      }
+
+      console.log('📤 Đang gửi form với images:', uploadedUrls);
+      const res = await submit();
+      if (res?.id) {
+        setRedirectId(res.id);
+      }
+      setPopup({ open: true, type: 'success', title: 'Đăng tin thành công', message: 'Tin của bạn đã được đăng. Chúng tôi sẽ chuyển bạn tới trang chi tiết.' });
+    } catch (err) {
+      console.error('❌ Lỗi đăng tin:', err);
+      setPopup({ open: true, type: 'error', title: 'Không thể đăng tin', message: err.message || 'Vui lòng kiểm tra lại thông tin.' });
+    }
+  };
+
+  const handleSaveDraft = async () => {
+    try {
+      // Kiểm tra xem có ảnh nào cần upload không
+      const hasUnuploadedImages = files.length > 0 && previews.some(p => !p.remoteUrl);
+      
+      if (hasUnuploadedImages) {
+        setPopup({ open: true, type: 'info', title: 'Đang tải ảnh', message: 'Vui lòng chờ trong khi chúng tôi tải ảnh lên...' });
+        const urls = await uploadAll();
+        if (urls && urls.length > 0) {
+          setImages(urls);
+        }
+      } else if (files.length > 0 && !formData.images.length) {
+        // Nếu có file chưa được upload và form cũng không có ảnh
+        setPopup({ open: true, type: 'info', title: 'Đang tải ảnh', message: 'Vui lòng chờ trong khi chúng tôi tải ảnh lên...' });
+        const urls = await uploadAll();
+        if (urls && urls.length > 0) {
+          setImages(urls);
+        }
+      }
+
+      await saveDraftNow();
+      setPopup({ open: true, type: 'success', title: 'Đã lưu nháp', message: 'Bài viết của bạn đã được lưu. Bạn có thể quay lại chỉnh sửa bất cứ lúc nào.' });
+    } catch (err) {
+      setPopup({ open: true, type: 'error', title: 'Lỗi lưu nháp', message: err.message || 'Vui lòng thử lại.' });
+    }
+  };
+
+  const handlePreview = () => {
+    const data = {
+      title: formData.title,
+      description: formData.description,
+      price: formData.price,
+      images: formData.images.length ? formData.images : previews.map(p => p.url),
     };
+    navigate('/preview', { state: { draft: data } });
+  };
 
-    return (
-        <div className="bg-gray-50 min-h-screen font-sans pb-10">
-            <Header />
-            
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                <Link to="/" className="flex items-center text-gray-500 hover:text-blue-600 mb-6 transition text-sm font-medium w-fit">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4 mr-1">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
-                    </svg>
-                    Quay lại
-                </Link>
+  const closePopup = () => {
+    const wasSuccess = popup.type === 'success' && popup.title === 'Đăng tin thành công';
+    setPopup(prev => ({ ...prev, open: false }));
+    
+    if (wasSuccess) {
+      // Chuyển đến trang danh mục sau khi đăng tin thành công
+      navigate('/browse');
+    } else if (redirectId) {
+      navigate(`/book/${redirectId}`);
+      setRedirectId(null);
+    }
+  };
 
-                <h1 className="text-3xl font-extrabold text-gray-900 mb-8">Đăng bán sách</h1>
+  return (
+    <div className="bg-background-light dark:bg-background-dark text-slate-800 dark:text-slate-200 min-h-screen flex flex-col selection:bg-primary/20 selection:text-primary font-display">
+      <Header />
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    
-                    <div className="lg:col-span-2">
-                        <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8 space-y-6">
-                            
-                            {/* Tiêu đề */}
-                            <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">Tiêu đề sách</label>
-                                <input type="text" name="title" value={form.title} onChange={handleChange} className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" placeholder="Ví dụ: Đắc Nhân Tâm..." />
-                            </div>
-
-                            {/* Tác giả */}
-                            <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">Tác giả</label>
-                                <input type="text" name="author" value={form.author} onChange={handleChange} className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 transition" placeholder="Nhập tên tác giả..." />
-                            </div>
-
-                            {/* Danh mục */}
-                            <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-3">Danh mục</label>
-                                <div className="flex flex-wrap gap-2 items-center">
-                                    {categories.map((cat) => (
-                                        <button key={cat} type="button" onClick={() => handleCategorySelect(cat)} className={`px-4 py-2 rounded-full text-sm font-medium transition border ${form.category === cat ? "bg-blue-100 text-blue-700 border-blue-200 ring-2 ring-blue-100" : "bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100"}`}>{cat}</button>
-                                    ))}
-                                    {isAddingCat ? (
-                                        <div className="flex items-center gap-2 animate-fade-in-left">
-                                            <input type="text" className="border border-blue-300 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 w-40 shadow-sm" placeholder="Nhập tên..." value={newCatName} onChange={(e) => setNewCatName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleAddNewCategory()} autoFocus />
-                                            <button type="button" onClick={handleAddNewCategory} className="bg-blue-600 text-white rounded-full p-2 hover:bg-blue-700 shadow-md transition"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4"><path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" /></svg></button>
-                                            <button type="button" onClick={() => setIsAddingCat(false)} className="text-gray-400 hover:text-red-500 transition p-1"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5"><path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" /></svg></button>
-                                        </div>
-                                    ) : (
-                                        <button type="button" onClick={() => setIsAddingCat(true)} className="px-4 py-2 rounded-full text-sm font-medium transition border border-dashed border-gray-300 text-gray-500 hover:text-blue-600 hover:border-blue-400 bg-white flex items-center gap-1 hover:shadow-sm">
-                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4"><path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" /></svg>
-                                            Thêm danh mục
-                                        </button>
-                                    )}
-                                </div>
-                            </div>
-
-                            {/* Tình trạng sách */}
-                            <div>
-                                <div className="flex justify-between mb-2">
-                                    <label className="block text-sm font-semibold text-gray-700">Tình trạng sách</label>
-                                    <span className="text-sm font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded">{form.condition}%</span>
-                                </div>
-                                <input type="range" min="0" max="100" step="5" name="condition" value={form.condition} onChange={handleChange} className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600" />
-                                <div className="flex justify-between text-xs text-gray-400 mt-1"><span>Cũ nát</span><span>Khá tốt</span><span>Như mới</span></div>
-                            </div>
-
-                            {/* Mô tả */}
-                            <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">Mô tả chi tiết</label>
-                                <textarea rows="5" name="description" value={form.description} onChange={handleChange} className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 transition resize-none" placeholder="Mô tả về nội dung, tình trạng bìa, ghi chú thêm..."></textarea>
-                            </div>
-
-                            {/* Giá bán */}
-                            <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">Giá bán (VNĐ)</label>
-                                <div className="relative">
-                                    <input type="number" name="price" value={form.price} onChange={handleChange} className="w-full border border-gray-300 rounded-lg pl-4 pr-12 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 transition font-medium" placeholder="50000" />
-                                    <span className="absolute right-4 top-3 text-gray-500 font-medium">VNĐ</span>
-                                </div>
-                            </div>
-
-                            {/* --- PHẦN ẢNH BÌA (CẬP NHẬT MỚI) --- */}
-                            <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-3">Ảnh bìa</label>
-                                
-                                {/* Tabs chuyển đổi */}
-                                <div className="flex space-x-4 mb-4 border-b border-gray-200">
-                                    <button 
-                                        type="button"
-                                        onClick={() => setImageTab('link')}
-                                        className={`pb-2 text-sm font-medium transition ${imageTab === 'link' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
-                                    >
-                                        Nhập Link Ảnh
-                                    </button>
-                                    <button 
-                                        type="button"
-                                        onClick={() => setImageTab('upload')}
-                                        className={`pb-2 text-sm font-medium transition ${imageTab === 'upload' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
-                                    >
-                                        Tải ảnh lên
-                                    </button>
-                                </div>
-
-                                {imageTab === 'link' ? (
-                                    <div className="animate-fade-in">
-                                        <input 
-                                            type="text" name="image"
-                                            value={form.image} onChange={handleImageLinkChange}
-                                            className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-                                            placeholder="https://example.com/anh-sach.jpg"
-                                        />
-                                        <p className="text-xs text-gray-400 mt-2">* Dán đường dẫn ảnh từ internet.</p>
-                                    </div>
-                                ) : (
-                                    <div className="animate-fade-in">
-                                        <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-blue-300 border-dashed rounded-lg cursor-pointer bg-blue-50 hover:bg-blue-100 transition">
-                                            <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                                                <svg className="w-8 h-8 mb-2 text-blue-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
-                                                    <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/>
-                                                </svg>
-                                                <p className="text-sm text-gray-500"><span className="font-semibold text-blue-600">Bấm để tải ảnh</span></p>
-                                                <p className="text-xs text-gray-400 mt-1">PNG, JPG (Tối đa 5MB)</p>
-                                            </div>
-                                            <input 
-                                                type="file" 
-                                                className="hidden" 
-                                                accept="image/*"
-                                                onChange={handleFileUpload}
-                                            />
-                                        </label>
-                                    </div>
-                                )}
-                            </div>
-
-                        </form>
-                    </div>
-
-                    {/* Cột Phải: Preview */}
-                    <div className="lg:col-span-1">
-                        <div className="sticky top-24 space-y-6">
-                            <h3 className="text-lg font-bold text-gray-800">Xem trước bài đăng</h3>
-                            <div className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden">
-                                <div className="h-64 w-full bg-slate-100 flex items-center justify-center relative p-4">
-                                    {previewImage ? (
-                                        <img src={previewImage} alt="Cover" className="h-full object-contain shadow-lg" />
-                                    ) : (
-                                        <div className="text-center">
-                                            <div className="bg-white w-24 h-32 mx-auto mb-3 shadow-sm border border-gray-200 flex items-center justify-center">
-                                                <span className="text-xs text-gray-400">No Image</span>
-                                            </div>
-                                            <p className="text-xs text-gray-400">Ảnh sẽ hiện tại đây</p>
-                                        </div>
-                                    )}
-                                    <div className="absolute bottom-3 flex gap-1.5">
-                                        <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
-                                        <span className="w-2 h-2 bg-gray-300 rounded-full"></span>
-                                        <span className="w-2 h-2 bg-gray-300 rounded-full"></span>
-                                    </div>
-                                </div>
-                                <div className="p-5">
-                                    <h4 className="font-bold text-gray-900 text-lg mb-1 line-clamp-2">{form.title || "Tiêu đề sách sẽ hiện ở đây"}</h4>
-                                    <p className="text-sm text-gray-500 mb-3">{form.author || "Tên tác giả"}</p>
-                                    <span className="inline-block bg-blue-50 text-blue-600 text-xs px-2 py-1 rounded-md mb-2 font-medium">{form.category}</span>
-                                    <p className="text-blue-600 font-bold text-xl mb-3">{form.price ? Number(form.price).toLocaleString() : "0"} VNĐ</p>
-                                    <p className="text-xs text-gray-400 line-clamp-3">{form.description || "Mô tả chi tiết về sách, nội dung..."}</p>
-                                </div>
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <Link to="/" className="flex items-center justify-center w-full py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold rounded-xl transition">Hủy</Link>
-                                <button onClick={handleSubmit} className="flex items-center justify-center w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-200 transition transform hover:-translate-y-0.5">Đăng bán</button>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
+      <main className="flex-grow w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          
+          {/* Left Column: Form Content */}
+          <div className="lg:col-span-8 space-y-8">
+            <div className="relative">
+              <div className="absolute -left-6 top-1 w-1 h-10 bg-primary rounded-r-full hidden lg:block"></div>
+              <h1 className="text-3xl font-black tracking-tight text-slate-900 dark:text-white mb-2">Đăng tin bán sách</h1>
+              <p className="text-slate-500 dark:text-slate-400 text-lg">Chia sẻ tri thức, kết nối đam mê đọc sách.</p>
             </div>
+
+            {/* Image Upload Section */}
+            <div className="bg-white dark:bg-surface-dark rounded-2xl p-6 md:p-8 shadow-soft border border-slate-100 dark:border-slate-800">
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-3">
+                <IconBox icon="image" color="primary" />
+                Hình ảnh sản phẩm
+              </h3>
+              
+              <input 
+                id="book-images-input"
+                type="file" 
+                multiple 
+                accept="image/*"
+                onChange={handleImageSelect}
+                style={{ display: 'none' }}
+              />
+              
+              <div 
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+                onClick={() => document.getElementById('book-images-input').click()}
+                className="border-2 border-dashed border-blue-200 dark:border-slate-700 bg-soft-blue/50 dark:bg-slate-800/30 rounded-2xl p-8 flex flex-col items-center justify-center text-center hover:border-primary hover:bg-soft-blue dark:hover:bg-slate-800 transition-all duration-300 cursor-pointer group"
+                style={{
+                  borderColor: isDragging ? '#2196F3' : undefined,
+                  backgroundColor: isDragging ? '#e3f2fd' : undefined
+                }}
+              >
+                <div className="size-16 bg-white dark:bg-slate-700 rounded-full flex items-center justify-center mb-4 shadow-sm group-hover:scale-110 transition-transform duration-300">
+                  <span className="material-symbols-outlined text-primary text-[32px]">cloud_upload</span>
+                </div>
+                <p className="font-semibold text-slate-900 dark:text-white mb-2 text-lg">
+                  {isDragging ? 'Thả ảnh vào đây' : 'Kéo thả ảnh vào đây'}
+                </p>
+                <p className="text-sm text-slate-500 dark:text-slate-400">hoặc <span className="text-primary font-medium underline underline-offset-2">duyệt qua thiết bị</span></p>
+                <p className="text-xs text-slate-400 mt-3 bg-white dark:bg-slate-700 px-3 py-1 rounded-full">Hỗ trợ JPG, PNG, tối đa 5 ảnh</p>
+              </div>
+
+              <div className="mt-6 flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
+                {previews.map((preview, index) => (
+                  <div key={index} className="relative w-28 h-28 rounded-xl overflow-hidden flex-shrink-0 border-2 border-white dark:border-slate-600 shadow-md group">
+                    <img className="w-full h-full object-cover transition-transform group-hover:scale-105" alt={`Ảnh ${index + 1}`} src={preview.url}/>
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors"></div>
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleRemoveImage(index);
+                      }}
+                      className="absolute top-1.5 right-1.5 bg-white/90 dark:bg-slate-800/90 text-red-500 hover:text-red-600 rounded-full p-1.5 shadow-sm opacity-0 group-hover:opacity-100 transition-all hover:bg-red-50 hover:text-red-600 translate-y-2 group-hover:translate-y-0"
+                    >
+                      <span className="material-symbols-outlined text-[16px] block">close</span>
+                    </button>
+                    {preview.remoteUrl && (
+                      <div className="absolute bottom-0 left-0 right-0 bg-green-500/90 text-white text-[10px] py-1 text-center font-bold">
+                        ✓ Đã upload
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Book Details Section */}
+            <div className="bg-white dark:bg-surface-dark rounded-2xl p-6 md:p-8 shadow-soft border border-slate-100 dark:border-slate-800 space-y-6">
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2 flex items-center gap-3 border-b border-slate-100 dark:border-slate-700 pb-4">
+                <IconBox icon="edit_note" color="primary" />
+                Thông tin chi tiết
+              </h3>
+              
+              <div className="space-y-6">
+                <FormInput
+                  label="Tiêu đề sách"
+                  required
+                  placeholder="Nhập tên sách chính xác trên bìa"
+                  value={formData.title}
+                  onChange={(e) => updateField('title', e.target.value)}
+                />
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="group">
+                    <label className="block text-slate-700 dark:text-slate-300 font-semibold text-sm mb-2">Tác giả <span className="text-red-500">*</span></label>
+                    <input className="form-input w-full rounded-xl border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white focus:border-primary focus:bg-white dark:focus:bg-surface-dark focus:ring-4 focus:ring-primary/10 h-12 px-4 placeholder:text-slate-400 transition-all" placeholder="Tên tác giả" type="text"/>
+                  </div>
+                  <div className="group">
+                    <label className="block text-slate-700 dark:text-slate-300 font-semibold text-sm mb-2">Nhà xuất bản (Tùy chọn)</label>
+                    <input className="form-input w-full rounded-xl border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white focus:border-primary focus:bg-white dark:focus:bg-surface-dark focus:ring-4 focus:ring-primary/10 h-12 px-4 placeholder:text-slate-400 transition-all" placeholder="Ví dụ: NXB Trẻ" type="text"/>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="group">
+                    <label className="block text-slate-700 dark:text-slate-300 font-semibold text-sm mb-2">Thể loại <span className="text-red-500">*</span></label>
+                    <div className="relative">
+                      <select
+                        className="form-select w-full rounded-xl border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white focus:border-primary focus:bg-white dark:focus:bg-surface-dark focus:ring-4 focus:ring-primary/10 h-12 pl-4 pr-10 appearance-none transition-all cursor-pointer"
+                        value={formData.category_id}
+                        onChange={(e) => updateField('category_id', e.target.value)}
+                      >
+                        {categories.length > 0 ? (
+                          categories.map(cat => (
+                            <option key={cat.id} value={cat.id}>
+                              {cat.name}
+                            </option>
+                          ))
+                        ) : (
+                          <>
+                            <option value="1">Văn học - Tiểu thuyết</option>
+                            <option value="2">Kinh tế - Kinh doanh</option>
+                            <option value="3">Kỹ năng sống</option>
+                            <option value="4">Truyện tranh</option>
+                            <option value="5">Sách giáo khoa</option>
+                          </>
+                        )}
+                      </select>
+                    </div>
+                  </div>
+                  <div className="group">
+                    <label className="block text-slate-700 dark:text-slate-300 font-semibold text-sm mb-2">Năm xuất bản</label>
+                    <input className="form-input w-full rounded-xl border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white focus:border-primary focus:bg-white dark:focus:bg-surface-dark focus:ring-4 focus:ring-primary/10 h-12 px-4 placeholder:text-slate-400 transition-all" placeholder="Ví dụ: 2023" type="number"/>
+                  </div>
+                </div>
+
+                <FormTextarea
+                  label="Mô tả sản phẩm"
+                  placeholder="Tóm tắt nội dung sách, tình trạng chi tiết (có ghi chú, gập góc, ô vàng không?)..."
+                  value={formData.description}
+                  onChange={(e) => updateField('description', e.target.value)}
+                  rows={5}
+                />
+              </div>
+            </div>
+
+            {/* Condition & Price Section */}
+            <div className="bg-white dark:bg-surface-dark rounded-2xl p-6 md:p-8 shadow-soft border border-slate-100 dark:border-slate-800 space-y-6">
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2 flex items-center gap-3 border-b border-slate-100 dark:border-slate-700 pb-4">
+                <IconBox icon="sell" color="primary" />
+                Tình trạng & Giá bán
+              </h3>
+              
+              <div className="space-y-6">
+                <div>
+                  <span className="text-slate-700 dark:text-slate-300 font-semibold text-sm mb-3 block">Tình trạng sách <span className="text-red-500">*</span></span>
+                  <div className="flex flex-wrap gap-3">
+                    <label className="cursor-pointer group">
+                      <input className="peer sr-only" name="condition" type="radio" value="new"/>
+                      <div className="px-5 py-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 peer-checked:bg-primary peer-checked:border-primary peer-checked:text-white peer-checked:shadow-md peer-checked:shadow-blue-500/30 transition-all text-sm font-medium hover:border-primary/50">
+                        Mới 100%
+                      </div>
+                    </label>
+                    <label className="cursor-pointer group">
+                      <input defaultChecked className="peer sr-only" name="condition" type="radio" value="like_new"/>
+                      <div className="px-5 py-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 peer-checked:bg-primary peer-checked:border-primary peer-checked:text-white peer-checked:shadow-md peer-checked:shadow-blue-500/30 transition-all text-sm font-medium hover:border-primary/50">
+                        Như mới (99%)
+                      </div>
+                    </label>
+                    <label className="cursor-pointer group">
+                      <input className="peer sr-only" name="condition" type="radio" value="good"/>
+                      <div className="px-5 py-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 peer-checked:bg-primary peer-checked:border-primary peer-checked:text-white peer-checked:shadow-md peer-checked:shadow-blue-500/30 transition-all text-sm font-medium hover:border-primary/50">
+                        Đã qua sử dụng
+                      </div>
+                    </label>
+                    <label className="cursor-pointer group">
+                      <input className="peer sr-only" name="condition" type="radio" value="old"/>
+                      <div className="px-5 py-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 peer-checked:bg-primary peer-checked:border-primary peer-checked:text-white peer-checked:shadow-md peer-checked:shadow-blue-500/30 transition-all text-sm font-medium hover:border-primary/50">
+                        Sách cũ
+                      </div>
+                    </label>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <label className="block relative group">
+                    <span className="text-slate-700 dark:text-slate-300 font-semibold text-sm mb-2 block">Giá bìa (VNĐ)</span>
+                    <div className="relative">
+                      <input className="form-input w-full rounded-xl border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white focus:border-primary focus:bg-white dark:focus:bg-surface-dark focus:ring-4 focus:ring-primary/10 h-12 pl-4 pr-12 placeholder:text-slate-400 transition-all" placeholder="0" type="text"/>
+                      <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-medium pointer-events-none">đ</div>
+                    </div>
+                  </label>
+                  <label className="block relative group">
+                    <span className="text-slate-700 dark:text-slate-300 font-semibold text-sm mb-2 block">Giá muốn bán (VNĐ) <span className="text-red-500">*</span></span>
+                    <div className="relative">
+                      <input
+                        className="form-input w-full rounded-xl border-slate-200 dark:border-slate-600 bg-blue-50/50 dark:bg-blue-900/10 text-primary font-bold text-lg focus:border-primary focus:bg-white dark:focus:bg-surface-dark focus:ring-4 focus:ring-primary/10 h-12 pl-4 pr-12 placeholder:text-slate-400 transition-all"
+                        placeholder="0"
+                        type="number"
+                        value={formData.price}
+                        onChange={(e) => updateField('price', e.target.value)}
+                      />
+                      <div className="absolute right-4 top-1/2 -translate-y-1/2 text-primary text-sm font-bold pointer-events-none">đ</div>
+                    </div>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            {/* Mobile Action Buttons */}
+            <div className="flex lg:hidden items-center gap-4 pt-4 pb-8">
+              <button
+                className="flex-1 bg-primary hover:bg-primary-hover text-white font-bold py-3.5 px-6 rounded-xl transition-all shadow-lg shadow-blue-500/30 disabled:bg-slate-400"
+                onClick={handlePublish}
+                disabled={submitting || uploading}
+              >
+                {submitting ? 'Đang đăng...' : 'Đăng tin ngay'}
+              </button>
+              <button
+                className="bg-white dark:bg-surface-dark border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-300 font-semibold py-3.5 px-6 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                onClick={handleSaveDraft}
+                disabled={submitting || uploading}
+              >
+                Lưu nháp
+              </button>
+            </div>
+          </div>
+
+          {/* Right Column: Tips & Preview */}
+          <div className="lg:col-span-4 space-y-6">
+            
+            {/* Tips Card */}
+            <div className="bg-gradient-to-br from-white to-blue-50/30 dark:from-surface-dark dark:to-slate-800/30 rounded-2xl p-6 shadow-soft border border-blue-100/50 dark:border-slate-700">
+              <div className="flex items-center gap-3 mb-5">
+                <div className="size-10 rounded-full bg-yellow-400/10 flex items-center justify-center text-yellow-600">
+                  <span className="material-symbols-outlined">lightbulb</span>
+                </div>
+                <h4 className="font-bold text-slate-900 dark:text-white text-lg">Mẹo bán nhanh</h4>
+              </div>
+              <ul className="space-y-4">
+                <li className="flex gap-3 items-start p-3 rounded-xl hover:bg-white/60 dark:hover:bg-slate-800/60 transition-colors">
+                  <span className="material-symbols-outlined text-primary text-xl mt-0.5 shrink-0">check_circle</span>
+                  <div>
+                    <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">Hình ảnh rõ nét</p>
+                    <p className="text-xs text-slate-500 mt-1">Đăng ảnh thật, đủ sáng giúp người mua tin tưởng hơn.</p>
+                  </div>
+                </li>
+                <li className="flex gap-3 items-start p-3 rounded-xl hover:bg-white/60 dark:hover:bg-slate-800/60 transition-colors">
+                  <span className="material-symbols-outlined text-primary text-xl mt-0.5 shrink-0">check_circle</span>
+                  <div>
+                    <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">Mô tả chi tiết</p>
+                    <p className="text-xs text-slate-500 mt-1">Hãy trung thực về các lỗi nhỏ của sách (nếu có).</p>
+                  </div>
+                </li>
+                <li className="flex gap-3 items-start p-3 rounded-xl hover:bg-white/60 dark:hover:bg-slate-800/60 transition-colors">
+                  <span className="material-symbols-outlined text-primary text-xl mt-0.5 shrink-0">check_circle</span>
+                  <div>
+                    <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">Giá hợp lý</p>
+                    <p className="text-xs text-slate-500 mt-1">Tham khảo giá sách cũ cùng loại để đưa ra mức giá tốt.</p>
+                  </div>
+                </li>
+              </ul>
+            </div>
+
+            {/* Preview Card */}
+            <div className="bg-white dark:bg-surface-dark rounded-2xl p-6 shadow-card border border-slate-100 dark:border-slate-800 opacity-70 pointer-events-none select-none hidden md:block">
+              <h4 className="font-bold text-slate-400 mb-4 text-xs uppercase tracking-wider flex items-center gap-2">
+                <span className="material-symbols-outlined text-[16px]">preview</span>
+                Xem trước hiển thị
+              </h4>
+              {(() => {
+                const user = JSON.parse(localStorage.getItem('user') || 'null');
+                const seller = user ? {
+                  name: user.username || user.name || user.email || 'Bạn',
+                  avatar: user.avatar_url || user.avatar || null,
+                  initial: (user.username || user.name || 'B').charAt(0).toUpperCase()
+                } : { name: 'Bạn' };
+                return (
+                  <PostPreview
+                    title={formData.title}
+                    description={formData.description}
+                    price={formData.price}
+                    images={formData.images.length ? formData.images : previews.map(p => p.url)}
+                    seller={seller}
+                  />
+                );
+              })()}
+            </div>
+
+            {/* Sticky Action Buttons (Desktop) */}
+            <div className="hidden lg:block sticky top-24 z-10">
+              <div className="bg-white dark:bg-surface-dark rounded-2xl p-6 shadow-soft border border-slate-100 dark:border-slate-800">
+                <div className="flex flex-col gap-3">
+                  <button
+                    className="w-full bg-primary hover:bg-primary-hover text-white font-bold py-3.5 px-6 rounded-xl transition-all shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transform active:scale-[0.98] flex items-center justify-center gap-2 disabled:bg-slate-400"
+                    onClick={handlePublish}
+                    disabled={submitting || uploading}
+                  >
+                    <span className="material-symbols-outlined">send</span>
+                    {submitting ? 'Đang đăng...' : 'Đăng tin ngay'}
+                  </button>
+                  <button
+                    className="w-full bg-white dark:bg-surface-dark border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-300 font-semibold py-3 px-6 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                    onClick={handleSaveDraft}
+                    disabled={submitting || uploading}
+                  >
+                    Lưu nháp
+                  </button>
+                  <button
+                    className="w-full text-slate-500 dark:text-slate-400 font-medium py-2 px-6 rounded-xl hover:text-primary transition-colors text-sm flex items-center justify-center gap-2"
+                    onClick={handlePreview}
+                  >
+                    <span className="material-symbols-outlined text-[18px]">visibility</span>
+                    Xem trước
+                  </button>
+                </div>
+                <p className="text-xs text-center text-slate-400 mt-5 leading-relaxed">
+                  Bằng việc đăng tin, bạn đồng ý với <a href="#" className="text-primary hover:underline decoration-primary/50">Quy định đăng tin</a> của chúng tôi.
+                </p>
+                {message && (
+                  <p className="text-xs text-center text-green-600 dark:text-green-400 mt-3">{message}</p>
+                )}
+              </div>
+            </div>
+
+          </div>
         </div>
-    );
+      </main>
+
+      <Footer />
+
+      <ModalPopup
+        open={popup.open}
+        type={popup.type}
+        title={popup.title}
+        message={popup.message}
+        onClose={closePopup}
+      />
+    </div>
+  );
 }
 
 export default AddBook;
