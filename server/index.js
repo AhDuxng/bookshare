@@ -12,6 +12,7 @@ const transactionController = require('./controllers/transactionController');
 const purchaseController = require('./controllers/purchaseController');
 const categoryController = require('./controllers/categoryController');
 const imageController = require('./controllers/imageController');
+const cartController = require('./controllers/cartController');
 const { validateBookInput } = require('./middleware/validateBook');
 const { verifyToken, requireAuth } = require('./middleware/auth');
 
@@ -108,6 +109,12 @@ app.get('/api/transactions', transactionController.getTransactionHistory);
 
 // API: Mua sách
 app.post('/api/books/:id/purchase', purchaseController.purchaseBook);
+
+// Cart APIs
+app.get('/api/cart', cartController.getCart);
+app.post('/api/cart', cartController.addToCart);
+app.put('/api/cart/:id', cartController.updateQuantity);
+app.delete('/api/cart/:id', cartController.removeItem);
 
 // API: Đăng Ký tài khoản
 app.post('/api/register', async (req, res) => {

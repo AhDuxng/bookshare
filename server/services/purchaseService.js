@@ -1,4 +1,5 @@
 const supabase = require('../supabase');
+const cartService = require('./cartService');
 
 // Mua sách (Giao dịch: kiểm tra balance -> trừ tiền -> ghi chép giao dịch)
 exports.purchaseBook = async (userId, bookId) => {
@@ -42,6 +43,13 @@ exports.purchaseBook = async (userId, bookId) => {
         .single();
 
     if (transactionError) throw new Error(transactionError.message);
+
+    // Xóa khỏi giỏ hàng sau khi mua
+    try {
+        await cartService.removeItemByUserAndBook(userId, bookId);
+    } catch (cleanupErr) {
+        console.warn('⚠️ Không thể xóa giỏ hàng sau mua:', cleanupErr.message);
+    }
 
     return transaction;
 };

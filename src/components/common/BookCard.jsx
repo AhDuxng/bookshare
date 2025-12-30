@@ -10,14 +10,14 @@ const BookCard = ({
   image, 
   category,
   condition, 
-  conditionColor = "green", // green, blue, orange, gray, amber
+  conditionColor = "green", 
   rating,
-  user, // { name, avatar, initial }
-  overlayBadge, // Ví dụ: "Bán chạy", "-30%"
-  overlayBadgeColor = "amber", // amber, red
-  bottomBadge, // Ví dụ: "5 phút trước" (React Node)
-  actionButtons, // React Node cho các nút hành động (ví dụ: Thêm vào giỏ, Chỉnh sửa)
-  showHoverAction = false, // Có hiển thị nút "Xem chi tiết" khi hover không
+  user, 
+  overlayBadge, 
+  overlayBadgeColor = "amber", 
+  bottomBadge, 
+  actionButtons, 
+  showHoverAction = false, 
   className = ""
 }) => {
   

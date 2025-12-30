@@ -151,7 +151,7 @@ function AddBook() {
       }
 
       console.log('📤 Đang gửi form với images:', uploadedUrls);
-      const res = await submit();
+      const res = await submit(uploadedUrls);
       if (res?.id) {
         setRedirectId(res.id);
       }

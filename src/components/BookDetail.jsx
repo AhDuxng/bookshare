@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Header from './Header';
 import Footer from './Footer';
@@ -9,9 +9,13 @@ const API_BASE = 'http://localhost:3000';
 
 function BookDetail() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [book, setBook] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [relatedBooks, setRelatedBooks] = useState([]);
+  const [loadingRelated, setLoadingRelated] = useState(false);
+  const [addingCart, setAddingCart] = useState(false);
 
   // Fetch book data from API
   useEffect(() => {
@@ -61,60 +65,95 @@ function BookDetail() {
     window.scrollTo(0, 0);
   }, [id]);
 
-  // Dữ liệu sách cùng thể loại
-  const relatedBooks = [
-    {
-      id: 201,
-      title: "Đại số tuyến tính ứng dụng",
-      author: "Nguyễn Văn B",
-      price: "90.000 đ",
-      image: "https://lh3.googleusercontent.com/aida-public/AB6AXuCHRB9bajDbrY7VcwBeWxUK71Yt9-N_tq_CsVc4lgxgnF4G-2AVZZFX-haO4iqZxJakC04bzlE9ctWFxO5GN5VwDiKdgUY_4PkoJ7NsTW-xl8MOj8kmZ8FJ9_a3ExbUTOezSZxRNUr7pOdspmaWtbDiLegpm1lYeerBYX1xEHhEUNgTgAstg035z9ZsdL94mVoyvuOuKylnTArnCROahHLBVeTdabEzEu1I9msdMQQp7DQNee4eAzqa3c0ZuVL3Bm5U9jNEP41jJg",
-      condition: "98% mới",
-      conditionColor: "blue",
-      user: { name: "User B", avatar: "https://via.placeholder.com/30" }
-    },
-    {
-      id: 202,
-      title: "Xác suất thống kê cơ bản",
-      author: "Trần Thị C",
-      price: "65.000 đ",
-      image: "https://lh3.googleusercontent.com/aida-public/AB6AXuCdPDV49sqXhlo04eYKGTVg_iDEoyNisR7tvJEk_ySOzREuiTDQbRLlZ1UrxXq8tirGy0ym0s_SG5jtHPCiKSAjGdBv_At0bgJJQq6hgcDlTiIKlNBXdysPpAqTTgqM-HqgxEHHPEB9psi9nFJbUtLDQc86uIsydMtPI7oNCqTApFmSBBIJ-zJrsyOei5h_n38zavM3diOuRrHGx3GSIiq9a5v8-FK-uRlNLx6yUeFzxvl9fbjZ7NPMQy940-qNUFsIPx2RfT-eFw",
-      condition: "Khá tốt",
-      conditionColor: "gray",
-      user: { name: "User C", avatar: "https://via.placeholder.com/30" }
-    },
-    {
-      id: 203,
-      title: "Vật lý đại cương tập 1",
-      author: "Lê Văn D",
-      price: "110.000 đ",
-      image: "https://lh3.googleusercontent.com/aida-public/AB6AXuD4KJ_xx08V-ki8Cn7DHggR1eeV_17W-wA47UOXaLPsrQz2GSuUnyepLarp-cMqCvLFEZo-j56uQ1Bok5VLKf07eJBG-2kJjiwJKXBCiY-nb2rY7As0tkmoXJLlVuQALVkDSK7vuYY_wZYn8KrbRHUv5i7_G755mpEDOYyE8E59Em9yYm8NGn8m16Ozj_Kp07GRxY40XyrLh4fF-HOSq8aFg1GSdMsvjAb8SiFILqNUBxEftjLzogMCVNIqGoqNdchJqfyggzv3OQ",
-      condition: "Mới 95%",
-      conditionColor: "green",
-      user: { name: "User D", avatar: "https://via.placeholder.com/30" }
-    },
-    {
-      id: 204,
-      title: "Hóa học hữu cơ",
-      author: "Phạm Thị E",
-      price: "130.000 đ",
-      image: "https://lh3.googleusercontent.com/aida-public/AB6AXuDisUbCcj1otj7pchsjTgny8ZkmBiXKlZnTqI1clRfDItffqQGwrc9IuCFKoHmgjmtazpVntM8o5JCDPTYESR5tG-s471-oLBlyrvnEoCyQDtN5OOwfmTmDvW-mnj1evMoYZAXI5vhbg_m4tjCZH16sn4EHsjpMQQZzZ2GXBs6ZopX7GN2_j5UscCgQXM3EqkOY2iwEDAjAJOTGZ80k-qPhyN8HiOKyULmhlRdly4g3fd1zcrLGzSTVepdXWgZrPojhNIoksgz11w",
-      condition: "Mới 100%",
-      conditionColor: "blue",
-      user: { name: "User E", avatar: "https://via.placeholder.com/30" }
-    },
-    {
-      id: 205,
-      title: "Lịch sử văn minh thế giới",
-      author: "Hoàng Văn F",
-      price: "200.000 đ",
-      image: "https://lh3.googleusercontent.com/aida-public/AB6AXuBTgqt_6IItxvFUL1VxtE3FoF171iFJrFogrWI2de0G_XKjaFuXdNY5prij9egyM6m6sa_l7IbWR7chhJXOsyq8_HNz93dA6UUTU7o88VAvQ_1DfiT7DBLqTsyr_pcjLb3EhJxXFy5sem6PG_CWynuc-5M1inOr0lxH1Y8iFGuTx93tvcbkiq0NyQ3FuT3O7diKsvibcOtum9h8Y61rG59vDWp4Wwjr0cCxaVM1SdPYIWDkSm5XUyDq5tSBLXLLg018LfJ7HcE_DQ",
-      condition: "Rất tốt",
-      conditionColor: "green",
-      className: "hidden lg:flex",
-      user: { name: "User F", avatar: "https://via.placeholder.com/30" }
+  // Fetch related books in the same category
+  useEffect(() => {
+    if (!book?.categorySlug) return;
+
+    const fetchRelatedBooks = async () => {
+      setLoadingRelated(true);
+      try {
+        const response = await axios.get(`${API_BASE}/api/categories/${book.categorySlug}/books`);
+        const booksData = response.data || [];
+        
+        // Filter out current book and limit to 5 items
+        const filtered = booksData
+          .filter(b => b.id !== parseInt(id))
+          .slice(0, 5)
+          .map(b => ({
+            id: b.id,
+            title: b.title,
+            author: b.author,
+            price: b.price ? `${Number(b.price).toLocaleString()}đ` : 'Liên hệ',
+            image: b.image_url,
+            condition: b.condition || 'good',
+            user: b.users ? {
+              name: b.users.username,
+              avatar: b.users.avatar_url
+            } : null
+          }));
+        
+        setRelatedBooks(filtered);
+      } catch (err) {
+        console.error('Lỗi khi tải sách liên quan:', err);
+        setRelatedBooks([]);
+      } finally {
+        setLoadingRelated(false);
+      }
+    };
+
+    fetchRelatedBooks();
+  }, [book?.categorySlug, id]);
+
+  const handleAddToCart = async () => {
+    if (!book) return;
+    const userStr = localStorage.getItem('user');
+    const token = localStorage.getItem('token');
+    if (!userStr) {
+      alert('Vui lòng đăng nhập để thêm vào giỏ hàng');
+      navigate('/login');
+      return;
     }
-  ];
+    let user;
+    try {
+      user = JSON.parse(userStr);
+    } catch (e) {
+      alert('Phiên đăng nhập không hợp lệ, vui lòng đăng nhập lại');
+      navigate('/login');
+      return;
+    }
+
+    setAddingCart(true);
+    try {
+      await axios.post(`${API_BASE}/api/cart`, {
+        user_id: user.id,
+        book_id: book.id,
+        quantity: 1
+      }, {
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
+      alert('Đã thêm vào giỏ hàng');
+    } catch (err) {
+      console.error('Lỗi thêm giỏ hàng:', err.response?.data || err.message);
+      const status = err.response?.status;
+      const data = err.response?.data;
+      const msg = data?.error || data?.message || err.message || 'Không thể thêm vào giỏ hàng';
+      const detail = typeof data === 'object' ? JSON.stringify(data) : String(data || '');
+
+      if (status === 401 || msg.toLowerCase().includes('jwt expired')) {
+        alert('Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại');
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        navigate('/login');
+        return;
+      }
+
+      // Nếu thiếu thông tin, hiển thị cả chi tiết trả về từ server
+      alert(`${msg}${detail && detail !== msg ? `\n${detail}` : ''}`);
+    } finally {
+      setAddingCart(false);
+    }
+  };
+
 
   // Loading state
   if (loading) {
@@ -250,8 +289,13 @@ function BookDetail() {
 
             {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 pt-2">
-              <Button className="flex-1 h-14 text-lg shadow-lg shadow-blue-500/30 hover:shadow-blue-500/40 hover:-translate-y-0.5 active:translate-y-0" icon="shopping_cart_checkout">
-                Thêm vào giỏ
+              <Button 
+                className="flex-1 h-14 text-lg shadow-lg shadow-blue-500/30 hover:shadow-blue-500/40 hover:-translate-y-0.5 active:translate-y-0" 
+                icon="shopping_cart_checkout"
+                onClick={handleAddToCart}
+                disabled={addingCart}
+              >
+                {addingCart ? 'Đang thêm...' : 'Thêm vào giỏ'}
               </Button>
               <Button variant="outline" className="flex-1 h-14 text-lg border-2 hover:border-gray-300 dark:hover:border-gray-500" icon="chat_bubble">
                 Chat ngay
@@ -315,20 +359,31 @@ function BookDetail() {
         <div className="mb-12">
           <div className="flex items-center justify-between mb-8">
             <h2 className="text-2xl font-bold text-text-main dark:text-white relative pl-4 before:content-[''] before:absolute before:left-0 before:top-1 before:bottom-1 before:w-1 before:bg-primary before:rounded-full">Sách cùng thể loại</h2>
-            <Link to="#" className="text-primary font-bold text-sm hover:underline flex items-center gap-1">
+            <Link to={`/browse?category=${book.categorySlug}`} className="text-primary font-bold text-sm hover:underline flex items-center gap-1">
               Xem tất cả 
               <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
             </Link>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
-            {relatedBooks.map(book => (
-              <BookCard 
-                key={book.id} 
-                {...book} 
-                showHoverAction={true}
-              />
-            ))}
-          </div>
+          {loadingRelated ? (
+            <div className="flex justify-center items-center py-12">
+              <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary"></div>
+            </div>
+          ) : relatedBooks.length === 0 ? (
+            <div className="text-center py-12 text-slate-500 dark:text-slate-400">
+              <span className="material-symbols-outlined text-[48px] mb-2 opacity-50">book</span>
+              <p>Chưa có sách cùng thể loại</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
+              {relatedBooks.map(book => (
+                <BookCard 
+                  key={book.id} 
+                  {...book} 
+                  showHoverAction={true}
+                />
+              ))}
+            </div>
+          )}
         </div>
 
       </div>

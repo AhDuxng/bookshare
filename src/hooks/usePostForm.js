@@ -92,7 +92,7 @@ export function usePostForm() {
     return null;
   }, [formData]);
 
-  const submit = useCallback(async () => {
+  const submit = useCallback(async (imagesOverride = null) => {
     const err = validate();
     if (err) throw new Error(err);
 
@@ -115,13 +115,15 @@ export function usePostForm() {
         throw new Error('Vui lòng đăng nhập để đăng bán sách');
       }
 
+      const finalImages = imagesOverride && imagesOverride.length ? imagesOverride : formData.images;
+
       const payload = {
         user_id: userId,
         title: formData.title.trim(),
         author: 'N/A',
         price: Number(formData.price),
         description: formData.description.trim(),
-        image_urls: formData.images,
+        image_urls: finalImages,
         status: 'published',
         category_id: Number(formData.category_id),
       };

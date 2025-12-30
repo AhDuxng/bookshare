@@ -5,8 +5,6 @@ const SectionHeader = ({
   title, 
   iconColor = "bg-primary", // bg-primary, bg-red-500
   badge, // { text: "Mới nhất", color: "red" }
-  linkText = "Xem tất cả",
-  linkTo = "#"
 }) => {
   return (
     <div className="flex items-center justify-between px-2 pb-6 pt-2 border-b border-gray-100 dark:border-gray-800 mb-6">
@@ -24,13 +22,6 @@ const SectionHeader = ({
           </span>
         )}
       </div>
-
-      <Link 
-        to={linkTo} 
-        className="text-primary font-semibold text-sm hover:text-primary-dark hover:underline decoration-2 underline-offset-4 flex items-center gap-1 transition-all"
-      >
-        {linkText} <span className="material-symbols-outlined text-sm">arrow_forward</span>
-      </Link>
     </div>
   );
 };
